@@ -8,26 +8,94 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     public function index() {
-        return response()->json(Order::all());
+        $orders = Order::all();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Order retrieved succesfully',
+            'data' => $orders,
+        ], 200);
     }
 
     public function store(Request $request) {
-        $order = Order::create($request->all());
-        return response()->json($order, 201);
+        $request->validate([
+            'customer_id' => 'required|string|max:255',
+            'vendor_id' => 'required|string|max:255',
+            'courier_id' => 'required|string|max:255',
+            'tracking_number' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+        ]);
+
+        $orders = Order::create($request->all());
+        
+        return response()->json([
+            'status' => 201,
+            'message' => 'Order created succesfully.',
+            'data' => $orders
+        ], 201);
     }
 
     public function show($id) {
-        return response()->json(Order::findOrFail($id));
+        $orders = Order::find($id);
+
+    if (!$orders) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Order not found.',
+            'data' => null,
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Order retrieved successfully.',
+        'data' => $orders,
+    ], 200);
     }
 
     public function update(Request $request, $id) {
-        $order = Order::findOrFail($id);
-        $order->update($request->all());
-        return response()->json($order);
+        $orders = Order::find($id);
+
+        if (!$orders) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Order not found.',
+                'data' => null
+            ], 404);
+        }
+    
+        $request->validate([
+            'customer_id' => 'required|string|max:255',
+            'vendor_id' => 'required|string|max:255',
+            'courier_id' => 'required|string|max:255',
+            'tracking_number' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+        ]);
+        $orders->update($request->all());
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Order updated successfully.',
+            'data' => $orders
+        ], 200);
     }
 
     public function destroy($id) {
-        Order::findOrFail($id)->delete();
-        return response()->json(null, 204);
+        $orders = Order::find($id);
+
+        if (!$orders) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Order not found.',
+                'data' => null
+            ], 404);
+        }
+    
+        $orders->delete();
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Order deleted successfully.',
+            'data' => null
+        ], 200);
     }
 }
